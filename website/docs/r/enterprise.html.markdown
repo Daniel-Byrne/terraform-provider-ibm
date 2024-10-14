@@ -2,7 +2,7 @@
 subcategory: "Enterprise Management"
 layout: "ibm"
 page_title: "IBM : enterprise"
-sidebar_current: "docs-ibm-resource-enterprise"
+sidebar_current: sssss"docs-ibm-resource-enterprise"
 description: |-
   Manages enterprise.
 ---
