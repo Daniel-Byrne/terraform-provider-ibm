@@ -173,8 +173,8 @@ func ResourceIBMIAMAccountSettings() *schema.Resource {
 func ResourceIBMIAMAccountSettingsValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 
-	restrict_values := "RESTRICTED, NOT_RESTRICTED, NOT_SET"
-	mfa_values := "NONE, TOTP, TOTP4ALL, LEVEL1, LEVEL2, LEVEL3"
+	restrictValues := "RESTRICTED, NOT_RESTRICTED, NOT_SET"
+	mfaValues := "NONE, TOTP, TOTP4ALL, LEVEL1, LEVEL2, LEVEL3"
 
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -182,21 +182,21 @@ func ResourceIBMIAMAccountSettingsValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              restrict_values})
+			AllowedValues:              restrictValues})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 restrictCreateApiKey,
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              restrict_values})
+			AllowedValues:              restrictValues})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 mfa,
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              mfa_values})
+			AllowedValues:              mfaValues})
 
 	ibmIAMAccountSettingsValidator := validate.ResourceValidator{ResourceName: "ibm_iam_account_settings", Schema: validateSchema}
 	return &ibmIAMAccountSettingsValidator
@@ -267,16 +267,16 @@ func resourceIbmIamAccountSettingsRead(context context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting mfa: %s", err))
 	}
 	if accountSettingsResponse.History != nil {
-		history := []map[string]interface{}{}
+		var history []map[string]interface{}
 		for _, historyItem := range accountSettingsResponse.History {
-			historyItemMap := resourceIbmIamAccountSettingsEnityHistoryRecordToMap(historyItem)
+			historyItemMap := resourceIbmIamAccountSettingsEntityHistoryRecordToMap(historyItem)
 			history = append(history, historyItemMap)
 		}
 		if err = d.Set("history", history); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting history: %s", err))
 		}
 	}
-	userMfa := []map[string]interface{}{}
+	var userMfa []map[string]interface{}
 	if accountSettingsResponse.UserMfa != nil {
 		for _, userMfaItem := range accountSettingsResponse.UserMfa {
 			userMfaItemMap, err := resourceIBMIamAccountSettingsAccountSettingsUserMfaToMap(&userMfaItem)
@@ -308,17 +308,17 @@ func resourceIbmIamAccountSettingsRead(context context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceIbmIamAccountSettingsEnityHistoryRecordToMap(enityHistoryRecord iamidentityv1.EnityHistoryRecord) map[string]interface{} {
-	enityHistoryRecordMap := map[string]interface{}{}
+func resourceIbmIamAccountSettingsEntityHistoryRecordToMap(entityHistoryRecord iamidentityv1.EnityHistoryRecord) map[string]interface{} {
+	entityHistoryRecordMap := map[string]interface{}{}
 
-	enityHistoryRecordMap["timestamp"] = enityHistoryRecord.Timestamp
-	enityHistoryRecordMap["iam_id"] = enityHistoryRecord.IamID
-	enityHistoryRecordMap["iam_id_account"] = enityHistoryRecord.IamIDAccount
-	enityHistoryRecordMap["action"] = enityHistoryRecord.Action
-	enityHistoryRecordMap["params"] = enityHistoryRecord.Params
-	enityHistoryRecordMap["message"] = enityHistoryRecord.Message
+	entityHistoryRecordMap["timestamp"] = entityHistoryRecord.Timestamp
+	entityHistoryRecordMap["iam_id"] = entityHistoryRecord.IamID
+	entityHistoryRecordMap["iam_id_account"] = entityHistoryRecord.IamIDAccount
+	entityHistoryRecordMap["action"] = entityHistoryRecord.Action
+	entityHistoryRecordMap["params"] = entityHistoryRecord.Params
+	entityHistoryRecordMap["message"] = entityHistoryRecord.Message
 
-	return enityHistoryRecordMap
+	return entityHistoryRecordMap
 }
 
 func resourceIbmIamAccountSettingsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -335,53 +335,53 @@ func resourceIbmIamAccountSettingsUpdate(context context.Context, d *schema.Reso
 	hasChange := false
 
 	if d.HasChange("allowed_ip_addresses") {
-		allowed_ip_addresses_str := d.Get("allowed_ip_addresses").(string)
-		updateAccountSettingsOptions.SetAllowedIPAddresses(allowed_ip_addresses_str)
+		allowedIpAddressesStr := d.Get("allowed_ip_addresses").(string)
+		updateAccountSettingsOptions.SetAllowedIPAddresses(allowedIpAddressesStr)
 		hasChange = true
 	}
 
 	if d.HasChange("restrict_create_service_id") {
-		restrict_create_service_id_str := d.Get("restrict_create_service_id").(string)
-		updateAccountSettingsOptions.SetRestrictCreateServiceID(restrict_create_service_id_str)
+		restrictCreateServiceIdStr := d.Get("restrict_create_service_id").(string)
+		updateAccountSettingsOptions.SetRestrictCreateServiceID(restrictCreateServiceIdStr)
 		hasChange = true
 	}
 
 	if d.HasChange("restrict_create_platform_apikey") {
-		restrict_create_platform_apikey_str := d.Get("restrict_create_platform_apikey").(string)
-		updateAccountSettingsOptions.SetRestrictCreatePlatformApikey(restrict_create_platform_apikey_str)
+		restrictCreatePlatformApikeyStr := d.Get("restrict_create_platform_apikey").(string)
+		updateAccountSettingsOptions.SetRestrictCreatePlatformApikey(restrictCreatePlatformApikeyStr)
 		hasChange = true
 	}
 
 	if d.HasChange("mfa") {
-		mfa_str := d.Get("mfa").(string)
-		updateAccountSettingsOptions.SetMfa(mfa_str)
+		mfaStr := d.Get("mfa").(string)
+		updateAccountSettingsOptions.SetMfa(mfaStr)
 		hasChange = true
 	}
-	var user_mfa []iamidentityv1.AccountSettingsUserMfa
+	var userMfa []iamidentityv1.AccountSettingsUserMfa
 	if d.HasChange("user_mfa") {
 		for _, e := range d.Get("user_mfa").([]interface{}) {
 			value := e.(map[string]interface{})
 			userMfaItem := resourceIBMIamAccountSettingsMapToAccountSettingsUserMfa(value)
-			user_mfa = append(user_mfa, userMfaItem)
+			userMfa = append(userMfa, userMfaItem)
 		}
-		updateAccountSettingsOptions.SetUserMfa(user_mfa)
+		updateAccountSettingsOptions.SetUserMfa(userMfa)
 		hasChange = true
 	}
 	if d.HasChange("session_expiration_in_seconds") {
-		session_expiration_in_seconds_str := d.Get("session_expiration_in_seconds").(string)
-		updateAccountSettingsOptions.SetSessionExpirationInSeconds(session_expiration_in_seconds_str)
+		sessionExpirationInSecondsStr := d.Get("session_expiration_in_seconds").(string)
+		updateAccountSettingsOptions.SetSessionExpirationInSeconds(sessionExpirationInSecondsStr)
 		hasChange = true
 	}
 
 	if d.HasChange("session_invalidation_in_seconds") {
-		session_invalidation_in_seconds_str := d.Get("session_invalidation_in_seconds").(string)
-		updateAccountSettingsOptions.SetSessionInvalidationInSeconds(session_invalidation_in_seconds_str)
+		sessionInvalidationInSecondsStr := d.Get("session_invalidation_in_seconds").(string)
+		updateAccountSettingsOptions.SetSessionInvalidationInSeconds(sessionInvalidationInSecondsStr)
 		hasChange = true
 	}
 
 	if d.HasChange("max_sessions_per_identity") {
-		max_sessions_per_identity_str := d.Get("max_sessions_per_identity").(string)
-		updateAccountSettingsOptions.SetMaxSessionsPerIdentity(max_sessions_per_identity_str)
+		maxSessionsPerIdentityStr := d.Get("max_sessions_per_identity").(string)
+		updateAccountSettingsOptions.SetMaxSessionsPerIdentity(maxSessionsPerIdentityStr)
 		hasChange = true
 	}
 	if d.HasChange("system_access_token_expiration_in_seconds") {
