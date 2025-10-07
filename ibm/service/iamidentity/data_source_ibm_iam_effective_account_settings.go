@@ -513,7 +513,7 @@ func DataSourceIBMIamEffectiveAccountSettingsAccountSettingsEffectiveSectionToMa
 	if model.UserMfa != nil {
 		var userMfa []map[string]interface{}
 		for _, userMfaItem := range model.UserMfa {
-			userMfaItemMap, err := AccountSettingsUserMfaResponseToMap(&userMfaItem)
+			userMfaItemMap, err := ResolvedUserMfaResponseToMap(&userMfaItem)
 			if err != nil {
 				return modelMap, err
 			}
@@ -577,7 +577,7 @@ func DataSourceIBMIamEffectiveAccountSettingsAccountSettingsAccountSectionToMap(
 
 	var userMfa []map[string]interface{}
 	for _, userMfaItem := range model.UserMfa {
-		userMfaItemMap, err := AccountSettingsUserMfaResponseToMap(&userMfaItem)
+		userMfaItemMap, err := ResolvedUserMfaResponseToMap(&userMfaItem)
 		if err != nil {
 			return modelMap, err
 		}
@@ -637,7 +637,7 @@ func DataSourceIBMIamEffectiveAccountSettingsAccountSettingsAssignedTemplatesSec
 	if model.UserMfa != nil {
 		var userMfa []map[string]interface{}
 		for _, userMfaItem := range model.UserMfa {
-			userMfaItemMap, err := AccountSettingsUserMfaResponseToMap(&userMfaItem)
+			userMfaItemMap, err := ResolvedUserMfaResponseToMap(&userMfaItem)
 			if err != nil {
 				return modelMap, err
 			}

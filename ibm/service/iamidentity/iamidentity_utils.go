@@ -27,7 +27,7 @@ func EnityHistoryRecordToMap(model *iamidentityv1.EnityHistoryRecord) (map[strin
 	return modelMap, nil
 }
 
-func AccountSettingsUserMfaResponseToMap(model *iamidentityv1.AccountSettingsUserMfaResponse) (map[string]interface{}, error) {
+func ResolvedUserMfaResponseToMap(model *iamidentityv1.AccountSettingsUserMfaResponse) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 
 	modelMap["iam_id"] = *model.IamID
@@ -44,6 +44,19 @@ func AccountSettingsUserMfaResponseToMap(model *iamidentityv1.AccountSettingsUse
 	}
 	if model.Description != nil {
 		modelMap["description"] = *model.Description
+	}
+
+	return modelMap, nil
+}
+
+func UserMfaResponseToMap(model *iamidentityv1.UserMfa) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+
+	if model.IamID != nil {
+		modelMap["iam_id"] = *model.IamID
+	}
+	if model.Mfa != nil {
+		modelMap["mfa"] = *model.Mfa
 	}
 
 	return modelMap, nil

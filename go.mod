@@ -221,6 +221,8 @@ require (
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
 
+replace github.com/IBM/platform-services-go-sdk v0.88.0 => /Users/danielbyrne/dev/git/forked/platform-services-go-sdk
+
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
 // add sdk changes.

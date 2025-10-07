@@ -455,7 +455,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profiles":                      iamidentity.DataSourceIBMIamTrustedProfiles(),
 			"ibm_iam_trusted_profile_policy":                iampolicy.DataSourceIBMIAMTrustedProfilePolicy(),
 			"ibm_iam_user_mfa_enrollments":                  iamidentity.DataSourceIBMIamUserMfaEnrollments(),
-			"ibm_iam_account_settings_template":             iamidentity.DataSourceIBMAccountSettingsTemplate(),
+			"ibm_iam_account_settings_template":             iamidentity.DataSourceIBMIamAccountSettingsTemplate(),
 			"ibm_iam_trusted_profile_template":              iamidentity.DataSourceIBMTrustedProfileTemplate(),
 			"ibm_iam_account_settings_template_assignment":  iamidentity.DataSourceIBMAccountSettingsTemplateAssignment(),
 			"ibm_iam_trusted_profile_template_assignment":   iamidentity.DataSourceIBMTrustedProfileTemplateAssignment(),

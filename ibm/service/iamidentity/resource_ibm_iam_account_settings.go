@@ -412,7 +412,7 @@ func resourceIBMIamAccountSettingsRead(context context.Context, d *schema.Resour
 	}
 	userMfa := []map[string]interface{}{}
 	for _, userMfaItem := range accountSettingsResponse.UserMfa {
-		userMfaItemMap, err := AccountSettingsUserMfaResponseToMap(&userMfaItem)
+		userMfaItemMap, err := ResolvedUserMfaResponseToMap(&userMfaItem)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "user_mfa-to-map").GetDiag()
 		}

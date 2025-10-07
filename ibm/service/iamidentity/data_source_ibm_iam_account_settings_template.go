@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
+ */
 
 package iamidentity
 
@@ -7,19 +11,19 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strconv"
 
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
-func DataSourceIBMAccountSettingsTemplate() *schema.Resource {
+func DataSourceIBMIamAccountSettingsTemplate() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMAccountSettingsTemplateRead,
+		ReadContext: dataSourceIBMIamAccountSettingsTemplateRead,
 
 		Schema: map[string]*schema.Schema{
 			"template_id": {
@@ -29,7 +33,7 @@ func DataSourceIBMAccountSettingsTemplate() *schema.Resource {
 			},
 			"version": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Version of the account settings template.",
 			},
 			"include_history": {
@@ -37,11 +41,6 @@ func DataSourceIBMAccountSettingsTemplate() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 				Description: "Defines if the entity history is included in the response.",
-			},
-			"id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ID of the the template.",
 			},
 			"account_id": {
 				Type:        schema.TypeString,
@@ -71,12 +70,44 @@ func DataSourceIBMAccountSettingsTemplate() *schema.Resource {
 						"restrict_create_service_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Defines whether or not creating a service ID is access controlled. Valid values:  * RESTRICTED - only users assigned the 'Service ID creator' role on the IAM Identity Service can create service IDs, including the account owner  * NOT_RESTRICTED - all members of an account can create service IDs  * NOT_SET - to 'unset' a previous set value.",
+							Description: "Defines whether or not creating the resource is access controlled. Valid values:  * RESTRICTED - only users assigned the 'Service ID creator' role on the IAM Identity Service can create service IDs, including the account owner  * NOT_RESTRICTED - all members of an account can create service IDs  * NOT_SET - to 'unset' a previous set value.",
 						},
 						"restrict_create_platform_apikey": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Defines whether or not creating platform API keys is access controlled. Valid values:  * RESTRICTED - to apply access control  * NOT_RESTRICTED - to remove access control  * NOT_SET - to 'unset' a previous set value.",
+							Description: "Defines whether or not creating the resource is access controlled. Valid values:  * RESTRICTED - only users assigned the 'Service ID creator' role on the IAM Identity Service can create service IDs, including the account owner  * NOT_RESTRICTED - all members of an account can create service IDs  * NOT_SET - to 'unset' a previous set value.",
+						},
+						"restrict_user_list_visibility": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Defines whether or not user visibility is access controlled. Valid values:  * RESTRICTED - users can view only specific types of users in the account, such as those the user has invited to the account, or descendants of those users based on the classic infrastructure hierarchy  * NOT_RESTRICTED - any user in the account can view other users from the Users page in IBM Cloud console.",
+						},
+						"restrict_user_domains": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Defines if account invitations are restricted to specified domains. To remove an entry for a realm_id, perform an update (PUT) request with only the realm_id set.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"realm_id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The realm that the restrictions apply to.",
+									},
+									"invitation_email_allow_patterns": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The list of allowed email patterns. Wildcard syntax is supported, '*' represents any sequence of zero or more characters in the string, except for '.' and '@'. The sequence ends if a '.' or '@' was found. '**' represents any sequence of zero or more characters in the string - without limit.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"restrict_invitation": {
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "When true invites will only be possible to the domain patterns provided, otherwise invites are unrestricted.",
+									},
+								},
+							},
 						},
 						"allowed_ip_addresses": {
 							Type:        schema.TypeString,
@@ -86,26 +117,7 @@ func DataSourceIBMAccountSettingsTemplate() *schema.Resource {
 						"mfa": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Defines the MFA trait for the account. Valid values:  * NONE - No MFA trait set  * TOTP - For all non-federated IBMId users  * TOTP4ALL - For all users  * LEVEL1 - Email-based MFA for all users  * LEVEL2 - TOTP-based MFA for all users  * LEVEL3 - U2F MFA for all users.",
-						},
-						"user_mfa": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "List of users that are exempted from the MFA requirement of the account.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"iam_id": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The iam_id of the user.",
-									},
-									"mfa": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Defines the MFA requirement for the user. Valid values:  * NONE - No MFA trait set  * NONE_NO_ROPC- No MFA, disable CLI logins with only a password  * TOTP - For all non-federated IBMId users  * TOTP4ALL - For all users  * LEVEL1 - Email-based MFA for all users  * LEVEL2 - TOTP-based MFA for all users  * LEVEL3 - U2F MFA for all users.",
-									},
-								},
-							},
+							Description: "MFA trait definitions as follows:  * NONE - No MFA trait set  * NONE_NO_ROPC- No MFA, disable CLI logins with only a password  * TOTP - For all non-federated IBMId users  * TOTP4ALL - For all users  * LEVEL1 - Email-based MFA for all users  * LEVEL2 - TOTP-based MFA for all users  * LEVEL3 - U2F MFA for all users.",
 						},
 						"session_expiration_in_seconds": {
 							Type:        schema.TypeString,
@@ -131,6 +143,30 @@ func DataSourceIBMAccountSettingsTemplate() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Defines the refresh token expiration in seconds. Valid values:  * Any whole number between '900' and '259200'  * NOT_SET - To unset account setting and use service default.",
+						},
+						"user_mfa": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "List of users that are exempted from the MFA requirement of the account.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"iam_id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The iam_id of the user.",
+									},
+									"mfa": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "MFA trait definitions as follows:  * NONE - No MFA trait set  * NONE_NO_ROPC- No MFA, disable CLI logins with only a password  * TOTP - For all non-federated IBMId users  * TOTP4ALL - For all users  * LEVEL1 - Email-based MFA for all users  * LEVEL2 - TOTP-based MFA for all users  * LEVEL3 - U2F MFA for all users.",
+									},
+								},
+							},
+						},
+						"restrict_user_domains_account_override": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Defines if enterprise defined domain restrictions can be ignored in favour of the restriction defined at the account level.",
 						},
 					},
 				},
@@ -211,136 +247,155 @@ func DataSourceIBMAccountSettingsTemplate() *schema.Resource {
 	}
 }
 
-func dataSourceIBMAccountSettingsTemplateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMIamAccountSettingsTemplateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_account_settings_template", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getAccountSettingsTemplateVersionOptions := &iamidentityv1.GetAccountSettingsTemplateVersionOptions{}
 
-	id, version, err := parseResourceId(d.Get("template_id").(string))
-	if err != nil {
-		log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateRead failed %s", err)
-		return diag.FromErr(fmt.Errorf("resourceIBMAccountSettingsTemplateRead failed %s", err))
-	}
-	if version == "" {
-		version = d.Get("version").(string)
-	}
-
-	getAccountSettingsTemplateVersionOptions.SetTemplateID(id)
-	getAccountSettingsTemplateVersionOptions.SetVersion(version)
-
+	getAccountSettingsTemplateVersionOptions.SetTemplateID(d.Get("template_id").(string))
+	getAccountSettingsTemplateVersionOptions.SetVersion(d.Get("version").(string))
 	if _, ok := d.GetOk("include_history"); ok {
 		getAccountSettingsTemplateVersionOptions.SetIncludeHistory(d.Get("include_history").(bool))
 	}
 
-	accountSettingsTemplateResponse, response, err := iamIdentityClient.GetAccountSettingsTemplateVersionWithContext(context, getAccountSettingsTemplateVersionOptions)
+	accountSettingsTemplateResponse, _, err := iamIdentityClient.GetAccountSettingsTemplateVersionWithContext(context, getAccountSettingsTemplateVersionOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetAccountSettingsTemplateVersionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetAccountSettingsTemplateVersionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAccountSettingsTemplateVersionWithContext failed: %s", err.Error()), "(Data) ibm_iam_account_settings_template", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	d.SetId(buildResourceIdFromTemplateVersion(*accountSettingsTemplateResponse.ID, *accountSettingsTemplateResponse.Version))
-
-	if err = d.Set("id", accountSettingsTemplateResponse.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
-	}
-
-	if !core.IsNil(accountSettingsTemplateResponse.Version) {
-		versionStr := strconv.Itoa(int(*accountSettingsTemplateResponse.Version))
-		if err = d.Set("version", versionStr); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting version: %s", err))
-		}
-	}
+	d.SetId(fmt.Sprintf("%s/%s", *getAccountSettingsTemplateVersionOptions.TemplateID, *getAccountSettingsTemplateVersionOptions.Version))
 
 	if err = d.Set("account_id", accountSettingsTemplateResponse.AccountID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting account_id: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-account_id").GetDiag()
 	}
 
 	if err = d.Set("name", accountSettingsTemplateResponse.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-name").GetDiag()
 	}
 
-	if err = d.Set("description", accountSettingsTemplateResponse.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+	if !core.IsNil(accountSettingsTemplateResponse.Description) {
+		if err = d.Set("description", accountSettingsTemplateResponse.Description); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting description: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-description").GetDiag()
+		}
 	}
 
 	if err = d.Set("committed", accountSettingsTemplateResponse.Committed); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting committed: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting committed: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-committed").GetDiag()
 	}
 
-	var accountSettings []map[string]interface{}
-	if accountSettingsTemplateResponse.AccountSettings != nil {
-		modelMap, err := dataSourceIBMAccountSettingsTemplateAccountSettingsComponentToMap(accountSettingsTemplateResponse.AccountSettings)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		accountSettings = append(accountSettings, modelMap)
+	accountSettings := []map[string]interface{}{}
+	accountSettingsMap, err := DataSourceIBMIamAccountSettingsTemplateTemplateAccountSettingsToMap(accountSettingsTemplateResponse.AccountSettings)
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_account_settings_template", "read", "account_settings-to-map").GetDiag()
 	}
+	accountSettings = append(accountSettings, accountSettingsMap)
 	if err = d.Set("account_settings", accountSettings); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting account_settings %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting account_settings: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-account_settings").GetDiag()
 	}
 
-	var history []map[string]interface{}
-	if accountSettingsTemplateResponse.History != nil {
-		for _, modelItem := range accountSettingsTemplateResponse.History {
-			modelMap, err := EnityHistoryRecordToMap(&modelItem)
+	if !core.IsNil(accountSettingsTemplateResponse.History) {
+		history := []map[string]interface{}{}
+		for _, historyItem := range accountSettingsTemplateResponse.History {
+			historyItemMap, err := EnityHistoryRecordToMap(&historyItem)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_account_settings_template", "read", "history-to-map").GetDiag()
 			}
-			history = append(history, modelMap)
+			history = append(history, historyItemMap)
 		}
-	}
-	if err = d.Set("history", history); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting history %s", err))
+		if err = d.Set("history", history); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting history: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-history").GetDiag()
+		}
 	}
 
 	if err = d.Set("entity_tag", accountSettingsTemplateResponse.EntityTag); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting entity_tag: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting entity_tag: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-entity_tag").GetDiag()
 	}
 
 	if err = d.Set("crn", accountSettingsTemplateResponse.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-crn").GetDiag()
 	}
 
-	if err = d.Set("created_at", accountSettingsTemplateResponse.CreatedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+	if !core.IsNil(accountSettingsTemplateResponse.CreatedAt) {
+		if err = d.Set("created_at", accountSettingsTemplateResponse.CreatedAt); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-created_at").GetDiag()
+		}
 	}
 
-	if err = d.Set("created_by_id", accountSettingsTemplateResponse.CreatedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_by_id: %s", err))
+	if !core.IsNil(accountSettingsTemplateResponse.CreatedByID) {
+		if err = d.Set("created_by_id", accountSettingsTemplateResponse.CreatedByID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_by_id: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-created_by_id").GetDiag()
+		}
 	}
 
-	if err = d.Set("last_modified_at", accountSettingsTemplateResponse.LastModifiedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modified_at: %s", err))
+	if !core.IsNil(accountSettingsTemplateResponse.LastModifiedAt) {
+		if err = d.Set("last_modified_at", accountSettingsTemplateResponse.LastModifiedAt); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting last_modified_at: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-last_modified_at").GetDiag()
+		}
 	}
 
-	if err = d.Set("last_modified_by_id", accountSettingsTemplateResponse.LastModifiedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modified_by_id: %s", err))
+	if !core.IsNil(accountSettingsTemplateResponse.LastModifiedByID) {
+		if err = d.Set("last_modified_by_id", accountSettingsTemplateResponse.LastModifiedByID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting last_modified_by_id: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-last_modified_by_id").GetDiag()
+		}
 	}
 
 	return nil
 }
 
-func dataSourceIBMAccountSettingsTemplateAccountSettingsComponentToMap(model *iamidentityv1.AccountSettingsComponent) (map[string]interface{}, error) {
+func DataSourceIBMIamAccountSettingsTemplateTemplateAccountSettingsToMap(model *iamidentityv1.TemplateAccountSettings) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.RestrictCreateServiceID != nil {
-		modelMap["restrict_create_service_id"] = model.RestrictCreateServiceID
+		modelMap["restrict_create_service_id"] = *model.RestrictCreateServiceID
 	}
 	if model.RestrictCreatePlatformApikey != nil {
-		modelMap["restrict_create_platform_apikey"] = model.RestrictCreatePlatformApikey
+		modelMap["restrict_create_platform_apikey"] = *model.RestrictCreatePlatformApikey
+	}
+	if model.RestrictUserListVisibility != nil {
+		modelMap["restrict_user_list_visibility"] = *model.RestrictUserListVisibility
+	}
+	if model.RestrictUserDomains != nil {
+		restrictUserDomains := []map[string]interface{}{}
+		for _, restrictUserDomainsItem := range model.RestrictUserDomains {
+			restrictUserDomainsItemMap, err := AccountSettingsUserDomainRestrictionToMap(&restrictUserDomainsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			restrictUserDomains = append(restrictUserDomains, restrictUserDomainsItemMap)
+		}
+		modelMap["restrict_user_domains"] = restrictUserDomains
 	}
 	if model.AllowedIPAddresses != nil {
-		modelMap["allowed_ip_addresses"] = model.AllowedIPAddresses
+		modelMap["allowed_ip_addresses"] = *model.AllowedIPAddresses
 	}
 	if model.Mfa != nil {
-		modelMap["mfa"] = model.Mfa
+		modelMap["mfa"] = *model.Mfa
+	}
+	if model.SessionExpirationInSeconds != nil {
+		modelMap["session_expiration_in_seconds"] = *model.SessionExpirationInSeconds
+	}
+	if model.SessionInvalidationInSeconds != nil {
+		modelMap["session_invalidation_in_seconds"] = *model.SessionInvalidationInSeconds
+	}
+	if model.MaxSessionsPerIdentity != nil {
+		modelMap["max_sessions_per_identity"] = *model.MaxSessionsPerIdentity
+	}
+	if model.SystemAccessTokenExpirationInSeconds != nil {
+		modelMap["system_access_token_expiration_in_seconds"] = *model.SystemAccessTokenExpirationInSeconds
+	}
+	if model.SystemRefreshTokenExpirationInSeconds != nil {
+		modelMap["system_refresh_token_expiration_in_seconds"] = *model.SystemRefreshTokenExpirationInSeconds
 	}
 	if model.UserMfa != nil {
-		var userMfa []map[string]interface{}
+		userMfa := []map[string]interface{}{}
 		for _, userMfaItem := range model.UserMfa {
-			userMfaItemMap, err := dataSourceIBMAccountSettingsTemplateAccountSettingsUserMfaToMap(&userMfaItem)
+			userMfaItemMap, err := UserMfaResponseToMap(&userMfaItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -348,27 +403,8 @@ func dataSourceIBMAccountSettingsTemplateAccountSettingsComponentToMap(model *ia
 		}
 		modelMap["user_mfa"] = userMfa
 	}
-	if model.SessionExpirationInSeconds != nil {
-		modelMap["session_expiration_in_seconds"] = model.SessionExpirationInSeconds
+	if model.RestrictUserDomainsAccountOverride != nil {
+		modelMap["restrict_user_domains_account_override"] = *model.RestrictUserDomainsAccountOverride
 	}
-	if model.SessionInvalidationInSeconds != nil {
-		modelMap["session_invalidation_in_seconds"] = model.SessionInvalidationInSeconds
-	}
-	if model.MaxSessionsPerIdentity != nil {
-		modelMap["max_sessions_per_identity"] = model.MaxSessionsPerIdentity
-	}
-	if model.SystemAccessTokenExpirationInSeconds != nil {
-		modelMap["system_access_token_expiration_in_seconds"] = model.SystemAccessTokenExpirationInSeconds
-	}
-	if model.SystemRefreshTokenExpirationInSeconds != nil {
-		modelMap["system_refresh_token_expiration_in_seconds"] = model.SystemRefreshTokenExpirationInSeconds
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMAccountSettingsTemplateAccountSettingsUserMfaToMap(model *iamidentityv1.UserMfa) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["iam_id"] = model.IamID
-	modelMap["mfa"] = model.Mfa
 	return modelMap, nil
 }
