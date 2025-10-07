@@ -1,6 +1,14 @@
 package iamidentity
 
-import "github.com/IBM/platform-services-go-sdk/iamidentityv1"
+import (
+	"errors"
+	"fmt"
+	"strconv"
+	"strings"
+
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
+)
 
 func EnityHistoryRecordToMap(model *iamidentityv1.EnityHistoryRecord) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
@@ -75,4 +83,23 @@ func AccountSettingsUserDomainRestrictionToMap(model *iamidentityv1.AccountSetti
 	}
 
 	return modelMap, nil
+}
+
+func parseTemplateResourceId(ID string) (templateId, templateVersion string, err error) {
+	if !core.IsNil(ID) {
+		resourceIdParts := strings.Split(ID, "/")
+
+		if len(resourceIdParts) == 1 {
+			return resourceIdParts[0], "", nil
+		}
+
+		return resourceIdParts[0], resourceIdParts[1], nil
+	}
+
+	return "", "", errors.New("resource ID is null")
+}
+
+func buildResourceIdFromTemplateVersion(id string, version int64) string {
+	versionStr := strconv.Itoa(int(version))
+	return fmt.Sprintf("%s/%s", id, versionStr)
 }

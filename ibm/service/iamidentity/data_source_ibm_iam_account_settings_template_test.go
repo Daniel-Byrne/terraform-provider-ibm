@@ -90,6 +90,16 @@ func testAccCheckIBMAccountSettingsTemplateDataSourceConfigBasic(enterpriseAccou
 			description = "%s"
 			account_settings {
 				mfa = "LEVEL3"
+				restrict_user_list_visibility = "RESTRICTED"
+				restrict_user_domains_account_override = true
+				restrict_user_domains {
+					realm_id = "IBMid"
+					invitation_email_allow_patterns = [
+						"*@ibm.com",
+						"**@corp.org"
+						]
+					restrict_invitation = false
+				}
 			}
 		}
 

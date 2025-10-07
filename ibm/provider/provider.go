@@ -1306,7 +1306,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profile_claim_rule":            iamidentity.ResourceIBMIAMTrustedProfileClaimRule(),
 			"ibm_iam_trusted_profile_link":                  iamidentity.ResourceIBMIAMTrustedProfileLink(),
 			"ibm_iam_trusted_profile_policy":                iampolicy.ResourceIBMIAMTrustedProfilePolicy(),
-			"ibm_iam_account_settings_template":             iamidentity.ResourceIBMAccountSettingsTemplate(),
+			"ibm_iam_account_settings_template":             iamidentity.ResourceIBMIamAccountSettingsTemplate(),
 			"ibm_iam_trusted_profile_template":              iamidentity.ResourceIBMTrustedProfileTemplate(),
 			"ibm_iam_account_settings_template_assignment":  iamidentity.ResourceIBMAccountSettingsTemplateAssignment(),
 			"ibm_iam_trusted_profile_template_assignment":   iamidentity.ResourceIBMTrustedProfileTemplateAssignment(),

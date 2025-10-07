@@ -299,7 +299,7 @@ func resourceIBMAccountSettingsTemplateAssignmentCreate(context context.Context,
 
 	createAccountSettingsAssignmentOptions := &iamidentityv1.CreateAccountSettingsAssignmentOptions{}
 
-	templateId, _, err := parseResourceId(d.Get("template_id").(string))
+	templateId, _, err := parseTemplateResourceId(d.Get("template_id").(string))
 	if err != nil {
 		log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateRead failed %s", err)
 		return diag.FromErr(fmt.Errorf("resourceIBMAccountSettingsTemplateRead failed %s", err))

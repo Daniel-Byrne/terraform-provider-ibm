@@ -344,7 +344,7 @@ func resourceIBMTrustedProfileTemplateCreateVersion(context context.Context, d *
 		accountID := userDetails.UserAccount
 		createProfileTemplateVersionOptions.SetAccountID(accountID)
 	}
-	id, _, err := parseResourceId(d.Get("template_id").(string))
+	id, _, err := parseTemplateResourceId(d.Get("template_id").(string))
 	if err != nil {
 		log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateRead failed %s", err)
 		return diag.FromErr(fmt.Errorf("resourceIBMAccountSettingsTemplateRead failed %s", err))
@@ -405,7 +405,7 @@ func resourceIBMTrustedProfileTemplateRead(context context.Context, d *schema.Re
 
 	getProfileTemplateVersionOptions := &iamidentityv1.GetProfileTemplateVersionOptions{}
 
-	id, version, err := parseResourceId(d.Id())
+	id, version, err := parseTemplateResourceId(d.Id())
 	if err != nil {
 		log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateRead failed %s", err)
 		return diag.FromErr(fmt.Errorf("resourceIBMAccountSettingsTemplateRead failed %s", err))
@@ -530,7 +530,7 @@ func resourceIBMTrustedProfileTemplateUpdate(context context.Context, d *schema.
 
 	updateProfileTemplateVersionOptions := &iamidentityv1.UpdateProfileTemplateVersionOptions{}
 
-	id, version, err := parseResourceId(d.Id())
+	id, version, err := parseTemplateResourceId(d.Id())
 	if err != nil {
 		log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateUpdate failed %s", err)
 		return diag.FromErr(fmt.Errorf("resourceIBMAccountSettingsTemplateUpdate failed %s", err))
@@ -603,7 +603,7 @@ func resourceIBMTrustedProfileTemplateDelete(context context.Context, d *schema.
 
 	deleteProfileTemplateVersionOptions := &iamidentityv1.DeleteProfileTemplateVersionOptions{}
 
-	id, version, err := parseResourceId(d.Id())
+	id, version, err := parseTemplateResourceId(d.Id())
 	if err != nil {
 		log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateDelete failed %s", err)
 		return diag.FromErr(fmt.Errorf("resourceIBMAccountSettingsTemplateDelete failed %s", err))
@@ -629,7 +629,7 @@ func resourceIBMTrustedProfileTemplateCommit(context context.Context, d *schema.
 		return err
 	}
 
-	id, version, err := parseResourceId(d.Id())
+	id, version, err := parseTemplateResourceId(d.Id())
 	if err != nil {
 		return err
 	}

@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -33,7 +34,7 @@ func DataSourceIBMIamAccountSettingsTemplate() *schema.Resource {
 			},
 			"version": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "Version of the account settings template.",
 			},
 			"include_history": {
@@ -41,6 +42,11 @@ func DataSourceIBMIamAccountSettingsTemplate() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 				Description: "Defines if the entity history is included in the response.",
+			},
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the the template.",
 			},
 			"account_id": {
 				Type:        schema.TypeString,
@@ -257,8 +263,18 @@ func dataSourceIBMIamAccountSettingsTemplateRead(context context.Context, d *sch
 
 	getAccountSettingsTemplateVersionOptions := &iamidentityv1.GetAccountSettingsTemplateVersionOptions{}
 
-	getAccountSettingsTemplateVersionOptions.SetTemplateID(d.Get("template_id").(string))
-	getAccountSettingsTemplateVersionOptions.SetVersion(d.Get("version").(string))
+	id, version, err := parseTemplateResourceId(d.Get("template_id").(string))
+	if err != nil {
+		log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateRead failed %s", err)
+		return diag.FromErr(fmt.Errorf("resourceIBMAccountSettingsTemplateRead failed %s", err))
+	}
+	if version == "" {
+		version = d.Get("version").(string)
+	}
+
+	getAccountSettingsTemplateVersionOptions.SetTemplateID(id)
+	getAccountSettingsTemplateVersionOptions.SetVersion(version)
+
 	if _, ok := d.GetOk("include_history"); ok {
 		getAccountSettingsTemplateVersionOptions.SetIncludeHistory(d.Get("include_history").(bool))
 	}
@@ -270,7 +286,18 @@ func dataSourceIBMIamAccountSettingsTemplateRead(context context.Context, d *sch
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *getAccountSettingsTemplateVersionOptions.TemplateID, *getAccountSettingsTemplateVersionOptions.Version))
+	d.SetId(buildResourceIdFromTemplateVersion(*accountSettingsTemplateResponse.ID, *accountSettingsTemplateResponse.Version))
+
+	if err = d.Set("id", accountSettingsTemplateResponse.ID); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting account_id: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-id").GetDiag()
+	}
+
+	if !core.IsNil(accountSettingsTemplateResponse.Version) {
+		versionStr := strconv.Itoa(int(*accountSettingsTemplateResponse.Version))
+		if err = d.Set("version", versionStr); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting version: %s", err))
+		}
+	}
 
 	if err = d.Set("account_id", accountSettingsTemplateResponse.AccountID); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting account_id: %s", err), "(Data) ibm_iam_account_settings_template", "read", "set-account_id").GetDiag()

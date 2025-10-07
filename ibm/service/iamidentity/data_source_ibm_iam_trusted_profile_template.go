@@ -277,7 +277,7 @@ func dataSourceIBMTrustedProfileTemplateRead(context context.Context, d *schema.
 
 	getProfileTemplateVersionOptions := &iamidentityv1.GetProfileTemplateVersionOptions{}
 
-	id, version, err := parseResourceId(d.Get("template_id").(string))
+	id, version, err := parseTemplateResourceId(d.Get("template_id").(string))
 	if err != nil {
 		log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateRead failed %s", err)
 		return diag.FromErr(fmt.Errorf("resourceIBMAccountSettingsTemplateRead failed %s", err))
