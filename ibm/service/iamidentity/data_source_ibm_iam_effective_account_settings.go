@@ -348,6 +348,38 @@ func DataSourceIBMIamEffectiveAccountSettings() *schema.Resource {
 							Computed:    true,
 							Description: "Defines whether or not creating the resource is access controlled. Valid values:  * RESTRICTED - only users assigned the 'Service ID creator' role on the IAM Identity Service can create service IDs, including the account owner  * NOT_RESTRICTED - all members of an account can create service IDs  * NOT_SET - to 'unset' a previous set value.",
 						},
+						"restrict_user_list_visibility": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Defines whether or not user visibility is access controlled. Valid values:  * RESTRICTED - users can view only specific types of users in the account, such as those the user has invited to the account, or descendants of those users based on the classic infrastructure hierarchy  * NOT_RESTRICTED - any user in the account can view other users from the Users page in IBM Cloud console.",
+						},
+						"restrict_user_domains": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Defines if account invitations are restricted to specified domains. To remove an entry for a realm_id, perform an update (PUT) request with only the realm_id set.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"realm_id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The realm that the restrictions apply to.",
+									},
+									"invitation_email_allow_patterns": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The list of allowed email patterns. Wildcard syntax is supported, '*' represents any sequence of zero or more characters in the string, except for '.' and '@'. The sequence ends if a '.' or '@' was found. '**' represents any sequence of zero or more characters in the string - without limit.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"restrict_invitation": {
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "When true invites will only be possible to the domain patterns provided, otherwise invites are unrestricted.",
+									},
+								},
+							},
+						},
 						"allowed_ip_addresses": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -421,6 +453,11 @@ func DataSourceIBMIamEffectiveAccountSettings() *schema.Resource {
 									},
 								},
 							},
+						},
+						"restrict_user_domains_account_override": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Defines if enterprise defined domain restrictions can be ignored in favour of the restriction defined at the account level.",
 						},
 					},
 				},
@@ -644,6 +681,9 @@ func DataSourceIBMIamEffectiveAccountSettingsAccountSettingsAssignedTemplatesSec
 			userMfa = append(userMfa, userMfaItemMap)
 		}
 		modelMap["user_mfa"] = userMfa
+	}
+	if model.RestrictUserDomainsAccountOverride != nil {
+		modelMap["restrict_user_domains_account_override"] = *model.RestrictUserDomainsAccountOverride
 	}
 	return modelMap, nil
 }
